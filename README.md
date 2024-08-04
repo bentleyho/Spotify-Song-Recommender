@@ -21,3 +21,9 @@ Run the script:
 ```sh
 python -m app.songrecommender 
 ```
+
+## Testing
+Run Tests:
+```sh
+pytest
+```

@@ -7,3 +7,4 @@ requests
 spotipy
 python-dotenv
 ipython
+pytest
