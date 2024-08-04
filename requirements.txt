@@ -6,3 +6,4 @@ pandas
 requests
 spotipy
 python-dotenv
+ipython
