@@ -1,20 +1,15 @@
 # IMPORTS
 # packages (require installation)
-import spotipy
-import os
+import spotipy # type: ignore
 import requests
-from spotipy.oauth2 import SpotifyClientCredentials
+from spotipy.oauth2 import SpotifyClientCredentials # type: ignore
 from IPython.core.display import HTML
-from spotipy.oauth2 import SpotifyOAuth
+from spotipy.oauth2 import SpotifyOAuth # type: ignore
 from pandas import DataFrame
-from dotenv import load_dotenv
 
-#ENVIRONMENT VARIABLE RELATED CODE:
+from app.clientIDSecret import SPOTIPY_CLIENT_ID
+from app.clientIDSecret import SPOTIPY_CLIENT_SECRET
 
-load_dotenv()
-
-SPOTIPY_CLIENT_ID = os.getenv("SPOTIPY_CLIENT_ID")
-SPOTIPY_CLIENT_SECRET = os.getenv("SPOTIPY_CLIENT_SECRET")
 
 client_credentials_manager = SpotifyClientCredentials(client_id=SPOTIPY_CLIENT_ID, client_secret=SPOTIPY_CLIENT_SECRET)
 spotify = spotipy.Spotify(client_credentials_manager=client_credentials_manager)
@@ -68,3 +63,34 @@ if "tracks" in recommendations:
         print("No recommendations found.")
 else:
     print("Recommendations not available.")
+
+
+# convert image URL to html
+# credit to: https://towardsdatascience.com/rendering-images-inside-a-pandas-dataframe-3631a4883f60
+
+def img_html(url):
+    return '<img src="'+ url + '" width="50" >'
+
+def preview_html(url):
+    if url:
+        return '<a href="'+ url + '" >Listen on Spotify</a>'
+    else:
+        return None
+
+records = []
+for index, track in enumerate(recommendations['tracks']): 
+    record = {
+        "index": index,
+        "name": track['name'],
+        "artist": track["artists"][0]["name"],
+        "popularity": track["popularity"],
+        "preview_url": preview_html(track["preview_url"]),
+        "album_art": img_html(track["album"]["images"][0]["url"])
+    }
+    records.append(record)
+
+tracks_df = DataFrame(records)
+tracks_df.head()
+
+# displaying the dataframe as HTML, with HTML links and images:
+tracks_table = HTML(tracks_df.to_html(escape=False, index=False, formatters=dict(Icon=img_html)))

@@ -19,7 +19,5 @@ pip install -r requirements.txt
 
 Run the script:
 ```sh
-python app/songrecommender.py
-# equivalent:
-python -m app.songrecommender
+python -m app.songrecommender 
 ```
