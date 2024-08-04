@@ -1,0 +1,8 @@
+# this is the "requirements.txt" file (top level)
+
+# we list the name of each package this app requires
+
+pandas
+requests
+spotipy
+python-dotenv
