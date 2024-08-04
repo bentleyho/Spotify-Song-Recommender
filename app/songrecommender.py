@@ -1,6 +1,7 @@
 # IMPORTS
 # packages (require installation)
 import spotipy
+import os
 import requests
 from spotipy.oauth2 import SpotifyClientCredentials
 from IPython.core.display import HTML
