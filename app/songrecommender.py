@@ -10,11 +10,22 @@ from pandas import DataFrame
 from app.clientIDSecret import SPOTIPY_CLIENT_ID
 from app.clientIDSecret import SPOTIPY_CLIENT_SECRET
 
+SPOTIPY_REDIRECT_URI = "http://localhost:5000/auth/spotify/callback"
 
 client_credentials_manager = SpotifyClientCredentials(client_id=SPOTIPY_CLIENT_ID, client_secret=SPOTIPY_CLIENT_SECRET)
 spotify = spotipy.Spotify(client_credentials_manager=client_credentials_manager)
 
 token = client_credentials_manager.get_access_token(as_dict=False)
+
+def spotify_oauth():
+    # Create a SpotifyOAuth instance
+    return SpotifyOAuth(
+        client_id=SPOTIPY_CLIENT_ID,
+        client_secret=SPOTIPY_CLIENT_SECRET,
+        redirect_uri=SPOTIPY_REDIRECT_URI,
+        scope="user-library-read user-read-playback-state",
+        cache_path=".spotifycache",
+    )
 
 def get_track_id(track_name ="Peaches", artist_name ="Justin Beiber"):
         results = spotify.search(q=f'track:{track_name} artist:{artist_name}', type='track')
