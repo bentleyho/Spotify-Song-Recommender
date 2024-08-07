@@ -41,3 +41,7 @@ Run Tests:
 ```sh
 pytest
 ```
+
+### Credentials
+
+Login to the Spotify Developer console, create a new app, set redirect url of "http://localhost:5000/auth/spotify/callback". Note the app's client id and client secret. Provide these credentials via ".env" file approach (see below).
