@@ -3,37 +3,64 @@
 <head>
     <meta charset="UTF-8">
     <title>Spotify Track Details</title>
-    <style>
-        body {
-            background-image: url('path/to/your/background-image.jpg');
-            background-size: cover;
-            background-repeat: no-repeat;
-            background-attachment: fixed;
-            color: white;
-        }
-        form {
-            background: rgba(0, 0, 0, 0.5); /* semi-transparent background */
-            padding: 20px;
-            border-radius: 10px;
-            color: white;
-        }
-        label {
-            display: block;
-            margin-bottom: 8px;
-        }
-        input[type="text"] {
-            width: 100%;
-            padding: 10px;
-            margin-bottom: 10px;
-        }
-        input[type="button"] {
-            padding: 10px 20px;
-        }
-        #results {
-            margin-top: 20px;
-        }
-    </style>
 </head>
 <body>
     <h1>Spotify Track Details</h1>
-    <form id="trackForm
+    <form id="trackForm">
+        <label for="songName">Song Name:</label>
+        <input type="text" id="songName" name="songName">
+        <br><br>
+        <label for="artistName">Artist Name:</label>
+        <input type="text" id="artistName" name="artistName">
+        <br><br>
+        <input type="button" value="Submit" onclick="getTrackDetails()">
+    </form>
+    <div id="results"></div>
+    <script>
+        async function getTrackDetails() {
+            const songName = document.getElementById('songName').value;
+            const artistName = document.getElementById('artistName').value;
+            const response = await fetch('/get_track_details', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ track_name: songName, artist_name: artistName })
+            });
+            const data = await response.json();
+            displayResults(data);
+        }
+
+        function displayResults(data) {
+            let resultsDiv = document.getElementById('results');
+            let html = '';
+            if (data.track_id) {
+                html += `<h2>Track ID for "${data.track_name}" by ${data.artist_name}: ${data.track_id}</h2>`;
+                if (data.features) {
+                    html += '<h3>Audio Features:</h3>';
+                    html += `<pre>${JSON.stringify(data.features, null, 2)}</pre>`;
+                }
+                if (data.recommendations && data.recommendations.length > 0) {
+                    html += `<h3>Songs similar to "${data.seed_track_name}":</h3>`;
+                    html += '<table><tr><th>Track</th><th>Artist</th><th>Popularity</th><th>Preview</th><th>Album Art</th></tr>';
+                    data.recommendations.forEach(track => {
+                        html += `<tr>
+                                    <td>${track.name}</td>
+                                    <td>${track.artist}</td>
+                                    <td>${track.popularity}</td>
+                                    <td>${track.preview_url ? `<a href="${track.preview_url}">Listen on Spotify</a>` : 'N/A'}</td>
+                                    <td><img src="${track.album_art}" alt="Album Art"></td>
+                                </tr>`;
+                    });
+                    html += '</table>';
+                } else {
+                    html += '<p>No recommendations found.</p>';
+                }
+            } else {
+                html += `<p>Track "${data.track_name}" by ${data.artist_name} not found.</p>`;
+            }
+            resultsDiv.innerHTML = html;
+        }
+    </script>
+</body>
+</html>

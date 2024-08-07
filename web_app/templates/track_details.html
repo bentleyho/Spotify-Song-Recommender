@@ -4,21 +4,12 @@
     <meta charset="UTF-8">
     <title>Spotify Track Recommendations</title>
     <style>
-        body {
-            background-image: url('path/to/your/background-image.jpg');
-            background-size: cover;
-            background-repeat: no-repeat;
-            background-attachment: fixed;
-            color: white;
-        }
         table {
             width: 100%;
             border-collapse: collapse;
-            background: rgba(0, 0, 0, 0.5); /* semi-transparent background */
-            color: white;
         }
         table, th, td {
-            border: 1px solid white;
+            border: 1px solid black;
         }
         th, td {
             padding: 10px;
@@ -27,43 +18,10 @@
         img {
             width: 50px;
         }
-        #createPlaylistButton {
-            display: none;
-            margin-top: 20px;
-            padding: 10px 20px;
-        }
     </style>
 </head>
 <body>
     <h1>Spotify Track Recommendations</h1>
     <div id="results"></div>
-    <button id="createPlaylistButton" onclick="createPlaylist()">Create Playlist with Recommended Tracks</button>
-    <script>
-        async function fetchTrackDetails(track_name, artist_name) {
-            const response = await fetch('/get_track_details', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ track_name: track_name, artist_name: artist_name })
-            });
-            const data = await response.json();
-            displayResults(data);
-            if (data.recommended_track_ids && data.recommended_track_ids.length > 0) {
-                document.getElementById('createPlaylistButton').style.display = 'block';
-                sessionStorage.setItem('recommended_track_ids', JSON.stringify(data.recommended_track_ids));
-            }
-        }
-
-        function displayResults(data) {
-            let resultsDiv = document.getElementById('results');
-            let html = '';
-
-            if (data.track_id) {
-                html += `<h2>Track ID for "${data.track_name}" by ${data.artist_name}: ${data.track_id}</h2>`;
-                if (data.features) {
-                    html += '<h3>Audio Features:</h3>';
-                    html += `<pre>${JSON.stringify(data.features, null, 2)}</pre>`;
-                }
-            } else {
-                html +=
+</body>
+</html>
