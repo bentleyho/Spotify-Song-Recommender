@@ -8,10 +8,10 @@
     <h1>Spotify Track Details</h1>
     <form id="trackForm">
         <label for="songName">Song Name:</label>
-        <input type="text" id="songName" name="songName">
+        <input type="text" id="songName" name="songName" required>
         <br><br>
         <label for="artistName">Artist Name:</label>
-        <input type="text" id="artistName" name="artistName">
+        <input type="text" id="artistName" name="artistName" required>
         <br><br>
         <input type="button" value="Submit" onclick="getTrackDetails()">
     </form>
@@ -35,16 +35,6 @@
             let resultsDiv = document.getElementById('results');
             let html = '';
 
-            if (data.track_id) {
-                html += `<h2>Track ID for "${data.track_name}" by ${data.artist_name}: ${data.track_id}</h2>`;
-                if (data.features) {
-                    html += '<h3>Audio Features:</h3>';
-                    html += `<pre>${JSON.stringify(data.features, null, 2)}</pre>`;
-                }
-            } else {
-                html += '<p>Track not found.</p>';
-            }
-
             if (data.html_table) {
                 html += data.html_table;
             } else {
@@ -54,5 +44,11 @@
             resultsDiv.innerHTML = html;
         }
     </script>
+ <!-- FOOTER -->
+ <footer>
+    <hr>
+    &copy; Copyright 2024 Yaqi Wu and Bentley Ho |
+  </footer>
+</div>
 </body>
 </html>

@@ -104,7 +104,7 @@ def get_track_details():
                 records.append(record)
 
             tracks_df = DataFrame(records)
-            tracks_table = HTML(tracks_df.to_html(escape=False, index=False, formatters=dict(album_art=lambda x: x)))
+            tracks_table = HTML(tracks_df.to_html(escape=False, index=False, formatters=dict(album_art=lambda x: x, preview_url=lambda x: x)))
 
             response['html_table'] = tracks_table.data
 
