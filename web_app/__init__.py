@@ -9,7 +9,7 @@ from web_app.routes.home_routes import home_routes
 def create_app():
     app = Flask(__name__)
     app.register_blueprint(home_routes)
-    #app.register_blueprint(song_routes)
+    app.register_blueprint(stocks_routes)
     return app
 
 if __name__ == "__main__":

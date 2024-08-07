@@ -9,3 +9,4 @@ python-dotenv
 ipython
 pytest
 flask
+gunicorn #for the production server

@@ -1,0 +1,47 @@
+{% extends "layout.html" %}
+
+{% block content %}
+
+    <h2>Stocks Dashboard ({{ symbol }})</h2>
+
+    <p class="lead">Latest Close: {{ latest_close_usd }} (as of {{ latest_date }})</p>
+
+    <div id="chart-container" height="700px"></div>
+
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <script type="text/javascript">
+
+        console.log("STOCKS DASHBOARD...")
+
+        // use data passed from the router:
+        var symbol = '{{ symbol }}'
+        console.log(symbol)
+        var stockData = JSON.parse('{{data | tojson}}') // see: https://stackoverflow.com/a/45132694/670433
+        console.log(stockData)
+
+        // map the data:
+        var dates = stockData.map(obj => obj["timestamp"])
+        var closingPrices = stockData.map(obj => obj["adjusted_close"])
+
+        // visualize the data
+        // see: https://plotly.com/javascript/line-charts/
+        var series = {
+            x: dates,
+            y: closingPrices,
+            mode: "lines+markers"
+        }
+        var data = [series]
+        var layout = {
+            title: "Daily Closing Prices for Stock: " + symbol,
+            height: 450,
+            yaxis: {
+                title: {text: "Adjusted Closing Price"},
+                tickformat: '$' // see: https://plotly.com/javascript/tick-formatting/
+            },
+            xaxis: {title: {text: "Date"}}
+        }
+        Plotly.newPlot("chart-container", data, layout, {responsive: true})
+
+    </script>
+
+{% endblock %}
