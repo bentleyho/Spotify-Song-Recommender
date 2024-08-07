@@ -23,5 +23,44 @@
 <body>
     <h1>Spotify Track Recommendations</h1>
     <div id="results"></div>
+    <script>
+        async function fetchTrackDetails(track_name, artist_name) {
+            const response = await fetch('/get_track_details', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ track_name: track_name, artist_name: artist_name })
+            });
+            const data = await response.json();
+            displayResults(data);
+        }
+
+        function displayResults(data) {
+            let resultsDiv = document.getElementById('results');
+            let html = '';
+
+            if (data.track_id) {
+                html += `<h2>Track ID for "${data.track_name}" by ${data.artist_name}: ${data.track_id}</h2>`;
+                if (data.features) {
+                    html += '<h3>Audio Features:</h3>';
+                    html += `<pre>${JSON.stringify(data.features, null, 2)}</pre>`;
+                }
+            } else {
+                html += '<p>Track not found.</p>';
+            }
+
+            if (data.html_table) {
+                html += data.html_table;
+            } else {
+                html += '<p>No recommendations found or error occurred.</p>';
+            }
+
+            resultsDiv.innerHTML = html;
+        }
+
+        // Example: Fetch details for a specific track (replace with dynamic values as needed)
+        fetchTrackDetails('Peaches', 'Justin Bieber');
+    </script>
 </body>
 </html>

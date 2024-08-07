@@ -5,6 +5,7 @@ from spotipy.oauth2 import SpotifyClientCredentials, SpotifyOAuth
 from pandas import DataFrame
 from flask import Blueprint, request, jsonify, render_template
 import os
+from IPython.core.display import HTML
 
 from app.clientIDSecret import SPOTIPY_CLIENT_ID, SPOTIPY_CLIENT_SECRET
 
@@ -31,6 +32,15 @@ def get_track_id(track_name, artist_name):
         return items[0]['id']
     else:
         return None
+
+def img_html(url):
+    return f'<img src="{url}" width="50" >'
+
+def preview_html(url):
+    if url:
+        return f'<a href="{url}">Listen on Spotify</a>'
+    else:
+        return 'N/A'
 
 @spotify_routes.route('/get_track_details', methods=['POST'])
 def get_track_details():
@@ -79,18 +89,28 @@ def get_track_details():
                 "recommendations": []
             }
 
+        # Create DataFrame and render as HTML
+        if response['recommendations']:
+            records = []
+            for index, track in enumerate(response['recommendations']): 
+                record = {
+                    "index": index,
+                    "name": track['name'],
+                    "artist": track["artist"],
+                    "popularity": track["popularity"],
+                    "preview_url": track["preview_url"],
+                    "album_art": track["album_art"]
+                }
+                records.append(record)
+
+            tracks_df = DataFrame(records)
+            tracks_table = HTML(tracks_df.to_html(escape=False, index=False, formatters=dict(album_art=lambda x: x)))
+
+            response['html_table'] = tracks_table.data
+
         return jsonify(response)
     except Exception as e:
         return jsonify({'error': str(e)}), 500
-
-def img_html(url):
-    return '<img src="'+ url + '" width="50" >'
-
-def preview_html(url):
-    if url:
-        return '<a href="'+ url + '" >Listen on Spotify</a>'
-    else:
-        return None
 
 @spotify_routes.route('/track_details', methods=['GET'])
 def track_details():

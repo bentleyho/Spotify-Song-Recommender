@@ -34,31 +34,23 @@
         function displayResults(data) {
             let resultsDiv = document.getElementById('results');
             let html = '';
+
             if (data.track_id) {
                 html += `<h2>Track ID for "${data.track_name}" by ${data.artist_name}: ${data.track_id}</h2>`;
                 if (data.features) {
                     html += '<h3>Audio Features:</h3>';
                     html += `<pre>${JSON.stringify(data.features, null, 2)}</pre>`;
                 }
-                if (data.recommendations && data.recommendations.length > 0) {
-                    html += `<h3>Songs similar to "${data.seed_track_name}":</h3>`;
-                    html += '<table><tr><th>Track</th><th>Artist</th><th>Popularity</th><th>Preview</th><th>Album Art</th></tr>';
-                    data.recommendations.forEach(track => {
-                        html += `<tr>
-                                    <td>${track.name}</td>
-                                    <td>${track.artist}</td>
-                                    <td>${track.popularity}</td>
-                                    <td>${track.preview_url ? `<a href="${track.preview_url}">Listen on Spotify</a>` : 'N/A'}</td>
-                                    <td><img src="${track.album_art}" alt="Album Art"></td>
-                                </tr>`;
-                    });
-                    html += '</table>';
-                } else {
-                    html += '<p>No recommendations found.</p>';
-                }
             } else {
-                html += `<p>Track "${data.track_name}" by ${data.artist_name} not found.</p>`;
+                html += '<p>Track not found.</p>';
             }
+
+            if (data.html_table) {
+                html += data.html_table;
+            } else {
+                html += '<p>No recommendations found or error occurred.</p>';
+            }
+
             resultsDiv.innerHTML = html;
         }
     </script>
