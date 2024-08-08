@@ -3,6 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <title>Spotify Track Details</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        form {
+            margin-bottom: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        table, th, td {
+            border: 1px solid black;
+        }
+        th, td {
+            padding: 10px;
+            text-align: left;
+        }
+        img {
+            width: 50px;
+        }
+    </style>
 </head>
 <body>
     <h1>Spotify Track Details</h1>
@@ -34,21 +58,22 @@
         function displayResults(data) {
             let resultsDiv = document.getElementById('results');
             let html = '';
-
             if (data.html_table) {
                 html += data.html_table;
             } else {
                 html += '<p>No recommendations found or error occurred.</p>';
             }
 
+            if (data.playlist_url) {
+                html += `<p><a href="${data.playlist_url}" target="_blank">Open Spotify Playlist</a></p>`;
+            } else if (data.auth_url) {
+                html += `<p><a href="${data.auth_url}" target="_blank">Authorize Spotify Access</a></p>`;
+            }
+
             resultsDiv.innerHTML = html;
         }
     </script>
- <!-- FOOTER -->
- <footer>
-    <hr>
-    &copy; Copyright 2024 Yaqi Wu and Bentley Ho |
-  </footer>
-</div>
-</body>
-</html>
+    <!-- FOOTER -->
+    <footer>
+        <hr>
+        &copy; Copyright 2024 Yaqi Wu and Bentley Ho
