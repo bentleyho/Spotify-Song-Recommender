@@ -7,7 +7,11 @@ from IPython.core.display import HTML
 
 from app.clientIDSecret import SPOTIPY_CLIENT_ID, SPOTIPY_CLIENT_SECRET
 
-SPOTIPY_REDIRECT_URI = "http://localhost:5000/auth/spotify/callback"
+# Dynamically set the redirect URI based on the environment
+if 'ON_RENDER' in os.environ:
+    SPOTIPY_REDIRECT_URI = "https://spotify-song-recommender-dgsa.onrender.com/auth/spotify/callback"
+else:
+    SPOTIPY_REDIRECT_URI = "http://localhost:5000/auth/spotify/callback"
 
 client_credentials_manager = SpotifyClientCredentials(client_id=SPOTIPY_CLIENT_ID, client_secret=SPOTIPY_CLIENT_SECRET)
 spotify = spotipy.Spotify(client_credentials_manager=client_credentials_manager)
@@ -118,12 +122,12 @@ def get_track_details():
             records = []
             for index, track in enumerate(response['recommendations']): 
                 record = {
-                    "Track": index,
-                    "Name": track['name'],
-                    "Artist": track["artist"],
-                    "Popularity": track["popularity"],
-                    "Preview URL": track["preview_url"],
-                    "Album Art": track["album_art"]
+                    "index": index,
+                    "name": track['name'],
+                    "artist": track["artist"],
+                    "popularity": track["popularity"],
+                    "preview_url": track["preview_url"],
+                    "album_art": track["album_art"]
                 }
                 records.append(record)
 

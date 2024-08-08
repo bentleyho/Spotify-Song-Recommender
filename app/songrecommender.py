@@ -10,7 +10,7 @@ from pandas import DataFrame
 from app.clientIDSecret import SPOTIPY_CLIENT_ID
 from app.clientIDSecret import SPOTIPY_CLIENT_SECRET
 
-SPOTIPY_REDIRECT_URI = "http://localhost:5000/auth/spotify/callback"
+SPOTIPY_REDIRECT_URI = "https://spotify-song-recommender-dgsa.onrender.com/auth/spotify/callback"
 
 client_credentials_manager = SpotifyClientCredentials(client_id=SPOTIPY_CLIENT_ID, client_secret=SPOTIPY_CLIENT_SECRET)
 spotify = spotipy.Spotify(client_credentials_manager=client_credentials_manager)
