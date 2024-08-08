@@ -4,14 +4,16 @@ from pandas import DataFrame
 from flask import Blueprint, request, jsonify, render_template, redirect, url_for, session
 import os
 from IPython.core.display import HTML
+import logging
 
-from app.clientIDSecret import SPOTIPY_CLIENT_ID, SPOTIPY_CLIENT_SECRET
+# Configure logging
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
 
-# Dynamically set the redirect URI based on the environment
-if 'ON_RENDER' in os.environ:
-    SPOTIPY_REDIRECT_URI = "https://spotify-song-recommender-dgsa.onrender.com/auth/spotify/callback"
-else:
-    SPOTIPY_REDIRECT_URI = "http://localhost:5000/auth/spotify/callback"
+# Read environment variables
+SPOTIPY_CLIENT_ID = os.environ.get('SPOTIPY_CLIENT_ID')
+SPOTIPY_CLIENT_SECRET = os.environ.get('SPOTIPY_CLIENT_SECRET')
+SPOTIPY_REDIRECT_URI = os.environ.get('SPOTIPY_REDIRECT_URI', "http://localhost:5000/auth/spotify/callback")
 
 client_credentials_manager = SpotifyClientCredentials(client_id=SPOTIPY_CLIENT_ID, client_secret=SPOTIPY_CLIENT_SECRET)
 spotify = spotipy.Spotify(client_credentials_manager=client_credentials_manager)
@@ -27,12 +29,29 @@ def spotify_oauth():
         cache_path=".spotifycache",
     )
 
+def get_token_info():
+    token_info = session.get("token_info", None)
+    if not token_info:
+        return None
+
+    sp_oauth = spotify_oauth()
+    if sp_oauth.is_token_expired(token_info):
+        logger.debug("Access token expired. Refreshing...")
+        token_info = sp_oauth.refresh_access_token(token_info['refresh_token'])
+        session["token_info"] = token_info
+        logger.debug(f"New token info: {token_info}")
+    return token_info
+
 def get_track_id(track_name, artist_name):
-    results = spotify.search(q=f'track:{track_name} artist:{artist_name}', type='track')
-    items = results['tracks']['items']
-    if items:
-        return items[0]['id']
-    else:
+    try:
+        results = spotify.search(q=f'track:{track_name} artist:{artist_name}', type='track')
+        items = results['tracks']['items']
+        if items:
+            return items[0]['id']
+        else:
+            return None
+    except Exception as e:
+        logger.error(f"Error getting track ID: {e}")
         return None
 
 def img_html(url):
@@ -45,15 +64,19 @@ def preview_html(url):
         return 'N/A'
 
 def create_playlist(track_ids, token_info, playlist_name):
-    access_token = token_info['access_token']
-    sp = spotipy.Spotify(auth=access_token)
+    try:
+        access_token = token_info['access_token']
+        sp = spotipy.Spotify(auth=access_token)
 
-    user_id = sp.current_user()['id']
-    playlist = sp.user_playlist_create(user=user_id, name=playlist_name, public=True)
-    playlist_id = playlist['id']
-    sp.playlist_add_items(playlist_id, track_ids)
+        user_id = sp.current_user()['id']
+        playlist = sp.user_playlist_create(user=user_id, name=playlist_name, public=True)
+        playlist_id = playlist['id']
+        sp.playlist_add_items(playlist_id, track_ids)
 
-    return playlist['external_urls']['spotify']
+        return playlist['external_urls']['spotify']
+    except Exception as e:
+        logger.error(f"Error creating playlist: {e}")
+        return None
 
 @spotify_routes.route('/get_track_details', methods=['POST'])
 def get_track_details():
@@ -66,6 +89,7 @@ def get_track_details():
             return jsonify({'error': 'Missing track_name or artist_name'}), 400
 
         track_id = get_track_id(track_name, artist_name)
+        logger.info(f"Track ID: {track_id}")
 
         if track_id:
             audio_features = spotify.audio_features(track_id)
@@ -86,10 +110,13 @@ def get_track_details():
                     })
                     track_ids.append(track["id"])
 
+            logger.info(f"Recommended Tracks: {recommended_tracks}")
+
             playlist_name = f"{track_name} by {artist_name} Recommended Playlist"
 
-            if 'token_info' in session:
-                playlist_url = create_playlist(track_ids, session['token_info'], playlist_name) if track_ids else None
+            token_info = get_token_info()
+            if token_info:
+                playlist_url = create_playlist(track_ids, token_info, playlist_name) if track_ids else None
                 response = {
                     "track_id": track_id,
                     "track_name": track_name,
@@ -138,22 +165,28 @@ def get_track_details():
 
         return jsonify(response)
     except Exception as e:
+        logger.error(f"Error in /get_track_details route: {e}")
         return jsonify({'error': str(e)}), 500
 
 @spotify_routes.route('/auth/spotify/callback')
 def spotify_callback():
-    sp_oauth = spotify_oauth()
-    session.clear()
-    token_info = sp_oauth.get_access_token(request.args['code'])
-    session["token_info"] = token_info
+    try:
+        sp_oauth = spotify_oauth()
+        session.clear()
+        token_info = sp_oauth.get_access_token(request.args['code'])
+        session["token_info"] = token_info
+        logger.debug(f"Token info after callback: {token_info}")
 
-    if 'track_ids' in session:
-        track_ids = session['track_ids']
-        playlist_name = session['playlist_name']
-        playlist_url = create_playlist(track_ids, token_info, playlist_name)
-        return redirect(url_for('spotify_routes.track_details', playlist_url=playlist_url))
+        if 'track_ids' in session:
+            track_ids = session['track_ids']
+            playlist_name = session['playlist_name']
+            playlist_url = create_playlist(track_ids, token_info, playlist_name)
+            return redirect(url_for('spotify_routes.track_details', playlist_url=playlist_url))
 
-    return redirect(url_for('spotify_routes.track_details'))
+        return redirect(url_for('spotify_routes.track_details'))
+    except Exception as e:
+        logger.error(f"Error in /auth/spotify/callback route: {e}")
+        return jsonify({'error': str(e)}), 500
 
 @spotify_routes.route('/track_details', methods=['GET'])
 def track_details():
