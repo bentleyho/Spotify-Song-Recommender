@@ -40,12 +40,12 @@ def preview_html(url):
     else:
         return 'N/A'
 
-def create_playlist(track_ids, token_info):
+def create_playlist(track_ids, token_info, playlist_name):
     access_token = token_info['access_token']
     sp = spotipy.Spotify(auth=access_token)
 
     user_id = sp.current_user()['id']
-    playlist = sp.user_playlist_create(user=user_id, name='Recommended Playlist', public=True)
+    playlist = sp.user_playlist_create(user=user_id, name=playlist_name, public=True)
     playlist_id = playlist['id']
     sp.playlist_add_items(playlist_id, track_ids)
 
@@ -82,8 +82,10 @@ def get_track_details():
                     })
                     track_ids.append(track["id"])
 
+            playlist_name = f"{track_name} by {artist_name} Recommended Playlist"
+
             if 'token_info' in session:
-                playlist_url = create_playlist(track_ids, session['token_info']) if track_ids else None
+                playlist_url = create_playlist(track_ids, session['token_info'], playlist_name) if track_ids else None
                 response = {
                     "track_id": track_id,
                     "track_name": track_name,
@@ -97,6 +99,7 @@ def get_track_details():
                 sp_oauth = spotify_oauth()
                 auth_url = sp_oauth.get_authorize_url()
                 session['track_ids'] = track_ids
+                session['playlist_name'] = playlist_name
                 response = {"auth_url": auth_url}
 
         else:
@@ -115,12 +118,12 @@ def get_track_details():
             records = []
             for index, track in enumerate(response['recommendations']): 
                 record = {
-                    "index": index,
-                    "name": track['name'],
-                    "artist": track["artist"],
-                    "popularity": track["popularity"],
-                    "preview_url": track["preview_url"],
-                    "album_art": track["album_art"]
+                    "Track": index,
+                    "Name": track['name'],
+                    "Artist": track["artist"],
+                    "Popularity": track["popularity"],
+                    "Preview URL": track["preview_url"],
+                    "Album Art": track["album_art"]
                 }
                 records.append(record)
 
@@ -142,7 +145,8 @@ def spotify_callback():
 
     if 'track_ids' in session:
         track_ids = session['track_ids']
-        playlist_url = create_playlist(track_ids, token_info)
+        playlist_name = session['playlist_name']
+        playlist_url = create_playlist(track_ids, token_info, playlist_name)
         return redirect(url_for('spotify_routes.track_details', playlist_url=playlist_url))
 
     return redirect(url_for('spotify_routes.track_details'))

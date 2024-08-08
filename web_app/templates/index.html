@@ -29,7 +29,7 @@
     </style>
 </head>
 <body>
-    <h1>Spotify Track Details</h1>
+    <h1>Spotify Song Recommender</h1>
     <form id="trackForm">
         <label for="songName">Song Name:</label>
         <input type="text" id="songName" name="songName" required>
@@ -58,6 +58,7 @@
         function displayResults(data) {
             let resultsDiv = document.getElementById('results');
             let html = '';
+
             if (data.html_table) {
                 html += data.html_table;
             } else {
@@ -76,4 +77,7 @@
     <!-- FOOTER -->
     <footer>
         <hr>
-        &copy; Copyright 2024 Yaqi Wu and Bentley Ho
+        &copy; Copyright 2024 Yaqi Wu and Bentley Ho |
+    </footer>
+</body>
+</html>
